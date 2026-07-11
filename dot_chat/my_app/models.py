@@ -25,17 +25,4 @@ class User(models.Model):
     )
     bio = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        db_table = 'users'  # Explicitly set table name
-        indexes = [
-            models.Index(fields=['phone_number']),
-            models.Index(fields=['username']),
-        ]
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return self.username
-    
-    def get_full_name(self):
-        return self.username  
+
