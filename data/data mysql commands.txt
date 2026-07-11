@@ -1,0 +1,10 @@
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    phone_number VARCHAR(15) UNIQUE NOT NULL,  -- Supports international
+    username VARCHAR(50) UNIQUE NOT NULL,
+    profile_pic VARCHAR(255) DEFAULT 'default.png',
+    bio TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_phone (phone_number),
+    INDEX idx_username (username)
+);

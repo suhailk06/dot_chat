@@ -72,11 +72,16 @@ WSGI_APPLICATION = 'dot_chat.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
+import oracledb
+oracledb.init_oracle_client(lib_dir=r"C:\oraclexe\app\oracle\product\10.2.0\server\BIN\instantclient_23_0")
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'XEPDB1',
+        'USER': 'dot_chat',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',  
+        'PORT': '1521',
     }
 }
 
