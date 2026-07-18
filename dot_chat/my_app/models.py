@@ -7,3 +7,5 @@ class User(models.Model):
     profile_pic = models.CharField(max_length=255, default='default.png')
     bio = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.username
