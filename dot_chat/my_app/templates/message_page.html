@@ -1,5 +1,152 @@
-{%extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
-<p>Message to user ID: {{receiver.username}}</p>
-<p>From user ID: {{sender.username}}</p>
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>Chat with {{ receiver.username }}</h1>
+        <p>You are: {{ sender.username }}</p>
+    </div>
+    
+    <div class="messages-container" id="messagesContainer">
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="message {% if msg.sender == sender %}sent{% else %}received{% endif %}">
+                    {% comment %} <strong>{{ msg.sender.username }}</strong> {% endcomment %}
+                    <p>{{ msg.message }}</p>
+                    <small>{{ msg.message_time|date:"Y-m-d H:i" }}</small>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No messages yet. Start chatting!</p>
+        {% endif %}
+    </div>
+    
+    <div class="message-form">
+        <form method="POST" action="{% url 'message_page' receiver_id=receiver.id %}" id="messageForm">
+            {% csrf_token %}
+            <div class="form-row">
+                <textarea 
+                    name="message" 
+                    placeholder="Type your message..." 
+                    rows="3"
+                    required
+                ></textarea>
+                <button type="submit">Send Message</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom on page load
+window.onload = function() {
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Auto-scroll to bottom when new message is sent
+document.getElementById('messageForm').addEventListener('submit', function() {
+    setTimeout(function() {
+        const container = document.getElementById('messagesContainer');
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+});
+</script>
+
+<style>
+.chat-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.chat-header {
+    background: #d2c1c1;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    height: 100px;
+}
+
+.messages-container {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.message.sent {
+    background: #dcf8c6;
+    text-align: right;
+    margin-left: 50px;
+    align-self: flex-end;
+}
+
+.message.received {
+    background: #ffffff;
+    margin-right: 50px;
+    border: 1px solid #000000;
+    align-self: flex-start;
+}
+
+.message strong {
+    display: block;
+    color: #333;
+    font-size: 14px;
+}
+
+.message p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.message small {
+    color: #666;
+    font-size: 12px;
+}
+
+.message-form {
+    margin-top: 20px;
+}
+
+.message-form .form-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.message-form textarea {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    height: 50px;
+}
+
+.message-form button {
+    padding: 10px 20px;
+    background: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    height: 50px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.message-form button:hover {
+    background: #cc0000;
+}
+</style>
 {% endblock %}

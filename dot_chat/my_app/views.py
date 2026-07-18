@@ -1,19 +1,22 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import check_password
+from django.db.models import Q
 from my_app.forms import UserForm
-from my_app.models import UserData
+from my_app.models import MessageData, UserData
 
 def index(request):
-
     return render(request, 'index.html')
 
-# @login_required(login_url='login')
 def home(request):
+    # Check if user is logged in
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
     users = UserData.objects.exclude(id=request.session.get('user_id'))
     return render(request, 'home.html', {'users': users})
 
@@ -74,34 +77,62 @@ def login_page(request):
     
     return render(request, 'login.html')
 
-
-
 def logout_page(request):
-    # Method 1: Clear specific session keys
+    # Clear session keys
     if 'user_id' in request.session:
         del request.session['user_id']
     if 'username' in request.session:
         del request.session['username']
     if 'user_email' in request.session:
         del request.session['user_email']
-    logout(request)
     
-
+    # Flush the session completely
+    request.session.flush()
+    
     messages.success(request, 'You have been logged out successfully.')
-
     return redirect('login')
 
-
 def message_page(request, receiver_id):
+    # Check if user is logged in
+    if 'user_id' not in request.session:
+        messages.error(request, 'Please login first.')
+        return redirect('login')
+    
     sender_id = request.session.get('user_id')
     sender = UserData.objects.get(id=sender_id)
     receiver = UserData.objects.get(id=receiver_id)
+ 
+    
+    # Handle POST request - Sending a message
+    if request.method == 'POST':
+        message_text = request.POST.get('message', '').strip()
+        
+        if message_text:
+            # Create new message
+            new_message = MessageData.objects.create(
+                message=message_text,
+                sender=sender,
+                receiver=receiver
+            )
+            messages.success(request, f'Message sent to {receiver.username}!')
+        else:
+            messages.error(request, 'Message cannot be empty.')
+        
+        # Redirect to the same page to avoid form resubmission
+        return redirect('message_page', receiver_id=receiver_id)
+    
+    # Handle GET request - Display the chat page
+    # Get all messages between sender and receiver
+    messages_list = MessageData.objects.filter(
+        Q(sender=sender, receiver=receiver) |
+        Q(sender=receiver, receiver=sender)
+    ).order_by('message_time')
     
     return render(request, 'message_page.html', {
+        'sender': sender,
+        'receiver': receiver,
         'receiver_id': receiver_id,
         'sender_id': sender_id,
-        'sender': sender,     # Add this
-        'receiver': receiver, # Add this
+        'messages': messages_list,
+        'username': sender.username,
     })
-
-    
