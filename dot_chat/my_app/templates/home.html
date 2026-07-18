@@ -1,21 +1,17 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <h1>welcome</h1>
-        <p>username {{user.username}}</p>
-        <p>email {{user.email}}</p>
-        <script src="" async defer></script>
-    </body>
-</html>
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h1>{{request.session.username}}</h1>
+    {% for user in users %}
+        <div class="card" style="width: 18rem;">
+            <img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Profile picture" width="10" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">{{ user.username }}</h5>
+                <p class="card-text">{{ user.bio }}</p>
+                <a href="#" class="btn btn-primary">{{ user.username }}</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No users found.</p>
+    {% endfor %}
+{% endblock %}
