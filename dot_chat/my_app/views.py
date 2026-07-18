@@ -14,7 +14,7 @@ def index(request):
 
 # @login_required(login_url='login')
 def home(request):
-    users = UserData.objects.all()  # Changed to UserData
+    users = UserData.objects.exclude(id=request.session.get('user_id'))
     return render(request, 'home.html', {'users': users})
 
 def register_page(request):
@@ -90,3 +90,18 @@ def logout_page(request):
     messages.success(request, 'You have been logged out successfully.')
 
     return redirect('login')
+
+
+def message_page(request, receiver_id):
+    sender_id = request.session.get('user_id')
+    sender = UserData.objects.get(id=sender_id)
+    receiver = UserData.objects.get(id=receiver_id)
+    
+    return render(request, 'message_page.html', {
+        'receiver_id': receiver_id,
+        'sender_id': sender_id,
+        'sender': sender,     # Add this
+        'receiver': receiver, # Add this
+    })
+
+    

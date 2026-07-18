@@ -8,7 +8,7 @@
             <div class="card-body">
                 <h5 class="card-title">{{ user.username }}</h5>
                 <p class="card-text">{{ user.bio }}</p>
-                <a href="#" class="btn btn-primary">{{ user.username }}</a>
+                <a href="{% url 'message_page' receiver_id=user.id %}" class="btn btn-primary">{{ user.username }}</a>
             </div>
         </div>
     {% empty %}
