@@ -12,7 +12,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: linear-gradient(135deg, #dc3545 0%, #8b0000 100%);
+            background-image: url({% static 'images/dot_chat_background.png' %});
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -20,6 +20,7 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             padding: 1rem;
         }
+
 
         .chat-container {
             background: rgba(255, 255, 255, 0.3);
@@ -83,7 +84,7 @@
         <div class="chat-header">
             <h2>Welcome To .chat</h2>
 
-<img src="{% static 'images/logo.jpg' %}" alt="logo" width=150>
+<img src="{% static 'images/logo.png' %}" alt="logo" width=150>
         </div>
         <div class="chat-input-group">
             <a href="/register"><button class="btn-send">Tap To Begin</button></a>
