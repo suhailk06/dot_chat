@@ -26,14 +26,13 @@ background-attachment: fixed;
             </style>
     </head>
     <body>
+
   <nav class="navbar">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/home"><img src="{% static 'images/logo.jpg' %}" alt="logo" width=50></a>
+    <a class="navbar-brand" href="/home"><img src="{% static 'images/logo.png' %}" alt="logo" width=50></a>
     <a class="navbar-brand" style="color:white" href="/logout/">logout</a>
-      <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-        <button class="btn btn-outline-light bs-danger-border-subtle" type="submit">Search</button>
-      </form>
+    <a href="/search_page"><button class="btn btn-outline-light bs-danger-border-subtle" >Search</button></a>
+
     </div>
   </div>
 </nav>

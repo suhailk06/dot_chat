@@ -7,7 +7,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from my_app.forms import UserForm
-from my_app.models import MessageData, UserData
+from my_app.models import MessageData, UserData, FriendListDATA
+from django.db.models import Q
 
 def index(request):
     return render(request, 'index.html')
@@ -16,9 +17,28 @@ def home(request):
     # Check if user is logged in
     if 'user_id' not in request.session:
         return redirect('login')
+
+    
+    user_id = request.session.get('user_id')
+
+# Get list of friend IDs
+    friend_ids = FriendListDATA.objects.filter(
+    user_id=user_id
+).values_list('friend_id', flat=True)
+
+# Get user data for those friends
+    friends = UserData.objects.filter(id__in=friend_ids)
+    return render(request, 'home.html', {'friends':friends})
+
+
+
+def search_page(request):
+    # Check if user is logged in
+    if 'user_id' not in request.session:
+        return redirect('login')
     
     users = UserData.objects.exclude(id=request.session.get('user_id'))
-    return render(request, 'home.html', {'users': users})
+    return render(request, 'search_page.html', {'users': users})
 
 def register_page(request):
     # If user is already logged in, redirect to home
@@ -136,3 +156,34 @@ def message_page(request, receiver_id):
         'messages': messages_list,
         'username': sender.username,
     })
+
+def add_friend(request, receiver_id):
+    if 'user_id' not in request.session:
+        messages.error(request, 'Please login first.')
+        return redirect('login')
+    
+    user_id = request.session.get('user_id')
+    
+    if user_id == receiver_id:
+        messages.error(request, "You cannot add yourself as a friend.")
+        return redirect('search_page')
+    
+    try:
+        user = UserData.objects.get(id=user_id)
+        friend = UserData.objects.get(id=receiver_id)
+        
+        # Use get_or_create to handle duplicates gracefully
+        friendship, created = FriendListDATA.objects.get_or_create(
+            user=user,
+            friend=friend
+        )
+        
+        if created:
+            messages.success(request, f"You are now friends with {friend.username}!")
+        else:
+            messages.warning(request, f"You are already friends with {friend.username}.")
+            
+    except UserData.DoesNotExist:
+        messages.error(request, "User not found.")
+    
+    return redirect('search_page')

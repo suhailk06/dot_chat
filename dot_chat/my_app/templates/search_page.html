@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<h1>home page</h1>
+<h1>search page</h1>
 <h1>{{ request.session.username }}</h1>
 <div class="container text-center" >
     <div class="row">
-        {% for user in friends %}
+        {% for user in users %}
             <div class="col-md-3 col-sm-6 mb-4">
                 <div class="card" >
                     <img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Profile picture" class="card-img-top" >
                     <div class="card-body">
                         <h5 class="card-title">{{ user.username }}</h5>
                     </div>
-<a href="{% url 'message_page' receiver_id=user.id %}">
-                <img src="{% static 'images/SendMessageButton.png' %}" alt="Profile picture" width=200></a>
+                    <a href="{% url 'add_friend' receiver_id=user.id %}">
+                <img src="{% static 'images/AddFriendRequestButton.png' %}" alt="Profile picture" width=200></a>
                 </div>
 
             </div>
