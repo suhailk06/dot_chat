@@ -48,6 +48,7 @@ class FriendListDATA(models.Model):
         related_name='friend_of'
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    status=models.CharField(default="pending",max_length=100)
     
     
     def __str__(self):

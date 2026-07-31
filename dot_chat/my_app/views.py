@@ -17,27 +17,75 @@ def home(request):
     # Check if user is logged in
     if 'user_id' not in request.session:
         return redirect('login')
-
     
     user_id = request.session.get('user_id')
-
-# Get list of friend IDs
+    
+    # Get list of friend IDs where status is 'friend'
     friend_ids = FriendListDATA.objects.filter(
-    user_id=user_id
-).values_list('friend_id', flat=True)
-
-# Get user data for those friends
-    friends = UserData.objects.filter(id__in=friend_ids)
-    return render(request, 'home.html', {'friends':friends})
-
-
+        Q(user_id=user_id, status='friend') | 
+        Q(friend_id=user_id, status='friend')
+    ).values_list('friend_id', flat=True)
+    
+    # Also get users who have added the current user as friend
+    friend_ids_from_others = FriendListDATA.objects.filter(
+        Q(friend_id=user_id, status='friend')
+    ).values_list('user_id', flat=True)
+    
+    # Combine both lists
+    all_friend_ids = list(friend_ids) + list(friend_ids_from_others)
+    # Remove duplicates and self
+    all_friend_ids = [fid for fid in set(all_friend_ids) if fid != user_id]
+    
+    # Get user data for those friends
+    friends = UserData.objects.filter(id__in=all_friend_ids)
+    
+    return render(request, 'home.html', {'friends': friends})
 
 def search_page(request):
     # Check if user is logged in
     if 'user_id' not in request.session:
         return redirect('login')
     
-    users = UserData.objects.exclude(id=request.session.get('user_id'))
+    user_id = request.session.get('user_id')
+    
+    # Get all users except the current user
+    users = UserData.objects.exclude(id=user_id)
+    
+    # Add status for each user
+    for user in users:
+        # Check if friendship exists in either direction
+        friendship = FriendListDATA.objects.filter(
+            Q(user_id=user_id, friend_id=user.id) |
+            Q(user_id=user.id, friend_id=user_id)
+        ).first()
+        
+        if friendship:
+            if friendship.status == 'friend':
+                user.status = 'friend'
+            elif friendship.status == 'pending':
+                # Check if current user is the sender
+                if friendship.user_id == user_id:
+                    user.status = 'pending_sent'
+                else:
+                    user.status = 'pending_received'
+            else:
+                user.status = friendship.status
+        else:
+            user.status = 'none'  # No friendship relationship
+            
+        # Check if pending request exists for better UX
+        if hasattr(user, 'status') and user.status == 'none':
+            # Double check for pending requests
+            pending_request = FriendListDATA.objects.filter(
+                Q(user_id=user_id, friend_id=user.id, status='pending') |
+                Q(user_id=user.id, friend_id=user_id, status='pending')
+            ).first()
+            if pending_request:
+                if pending_request.user_id == user_id:
+                    user.status = 'pending_sent'
+                else:
+                    user.status = 'pending_received'
+    
     return render(request, 'search_page.html', {'users': users})
 
 def register_page(request):
@@ -121,7 +169,15 @@ def message_page(request, receiver_id):
     sender_id = request.session.get('user_id')
     sender = UserData.objects.get(id=sender_id)
     receiver = UserData.objects.get(id=receiver_id)
- 
+    
+    # Check if users are friends (optional but recommended)
+    are_friends = FriendListDATA.objects.filter(
+        Q(user_id=sender_id, friend_id=receiver_id, status='friend') |
+        Q(user_id=receiver_id, friend_id=sender_id, status='friend')
+    ).exists()
+    
+    if not are_friends:
+        messages.warning(request, f'You are not friends with {receiver.username}. Messages may be limited.')
     
     # Handle POST request - Sending a message
     if request.method == 'POST':
@@ -155,6 +211,7 @@ def message_page(request, receiver_id):
         'sender_id': sender_id,
         'messages': messages_list,
         'username': sender.username,
+        'are_friends': are_friends,
     })
 
 def add_friend(request, receiver_id):
@@ -172,16 +229,35 @@ def add_friend(request, receiver_id):
         user = UserData.objects.get(id=user_id)
         friend = UserData.objects.get(id=receiver_id)
         
-        # Use get_or_create to handle duplicates gracefully
-        friendship, created = FriendListDATA.objects.get_or_create(
-            user=user,
-            friend=friend
-        )
+        # Check if friendship already exists in either direction
+        existing_friendship = FriendListDATA.objects.filter(
+            Q(user_id=user_id, friend_id=receiver_id) |
+            Q(user_id=receiver_id, friend_id=user_id)
+        ).first()
         
-        if created:
-            messages.success(request, f"You are now friends with {friend.username}!")
+        if existing_friendship:
+            if existing_friendship.status == 'friend':
+                messages.warning(request, f"You are already friends with {friend.username}.")
+            elif existing_friendship.status == 'pending':
+                # If the other user sent the request, accept it
+                if existing_friendship.user_id == receiver_id:
+                    existing_friendship.status = 'friend'
+                    existing_friendship.save()
+                    messages.success(request, f"You accepted {friend.username}'s friend request!")
+                else:
+                    messages.info(request, f"You already sent a friend request to {friend.username}.")
+            elif existing_friendship.status == 'blocked':
+                messages.error(request, f"You cannot add {friend.username} to your friends.")
+            else:
+                messages.warning(request, f"You are already in {friend.username}'s friend list.")
         else:
-            messages.warning(request, f"You are already friends with {friend.username}.")
+            # Create new friend request
+            friendship = FriendListDATA.objects.create(
+                user=user,
+                friend=friend,
+                status='pending'
+            )
+            messages.success(request, f"Friend request sent to {friend.username}!")
             
     except UserData.DoesNotExist:
         messages.error(request, "User not found.")
