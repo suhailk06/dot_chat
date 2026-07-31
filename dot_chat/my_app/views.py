@@ -48,43 +48,45 @@ def search_page(request):
     
     user_id = request.session.get('user_id')
     
-    # Get all users except the current user
-    users = UserData.objects.exclude(id=user_id)
+    # Get IDs of users who are already friends
+    friend_ids = FriendListDATA.objects.filter(
+        Q(user_id=user_id, status='friend') | 
+        Q(friend_id=user_id, status='friend')
+    ).values_list('friend_id', flat=True)
+    
+    # Get user_ids from reversed friendships
+    friend_ids_from_others = FriendListDATA.objects.filter(
+        Q(friend_id=user_id, status='friend')
+    ).values_list('user_id', flat=True)
+    
+    # Combine and remove duplicates
+    all_friend_ids = set(friend_ids) | set(friend_ids_from_others)
+    all_friend_ids.discard(user_id)  # Remove self
+    
+    # Get users excluding friends
+    users = UserData.objects.exclude(id=user_id).exclude(id__in=all_friend_ids)
     
     # Add status for each user
     for user in users:
-        # Check if friendship exists in either direction
-        friendship = FriendListDATA.objects.filter(
-            Q(user_id=user_id, friend_id=user.id) |
-            Q(user_id=user.id, friend_id=user_id)
-        ).first()
+        # Check for pending requests
+        pending_sent = FriendListDATA.objects.filter(
+            user_id=user_id, 
+            friend_id=user.id, 
+            status='pending'
+        ).exists()
         
-        if friendship:
-            if friendship.status == 'friend':
-                user.status = 'friend'
-            elif friendship.status == 'pending':
-                # Check if current user is the sender
-                if friendship.user_id == user_id:
-                    user.status = 'pending_sent'
-                else:
-                    user.status = 'pending_received'
-            else:
-                user.status = friendship.status
+        pending_received = FriendListDATA.objects.filter(
+            user_id=user.id, 
+            friend_id=user_id, 
+            status='pending'
+        ).exists()
+        
+        if pending_sent:
+            user.status = 'pending_sent'
+        elif pending_received:
+            user.status = 'pending_received'
         else:
-            user.status = 'none'  # No friendship relationship
-            
-        # Check if pending request exists for better UX
-        if hasattr(user, 'status') and user.status == 'none':
-            # Double check for pending requests
-            pending_request = FriendListDATA.objects.filter(
-                Q(user_id=user_id, friend_id=user.id, status='pending') |
-                Q(user_id=user.id, friend_id=user_id, status='pending')
-            ).first()
-            if pending_request:
-                if pending_request.user_id == user_id:
-                    user.status = 'pending_sent'
-                else:
-                    user.status = 'pending_received'
+            user.status = 'none'
     
     return render(request, 'search_page.html', {'users': users})
 

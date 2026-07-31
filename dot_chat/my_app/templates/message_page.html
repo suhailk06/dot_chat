@@ -1,11 +1,32 @@
 {% extends "base.html" %}
+{% load static%}
 {% block content %}
+
+<div class="container">
+  <div class="left">
+        <div class="bio-container" id="bioContainer">
+  <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+    <img src="{% static 'images/' %}{{ receiver.profile_pic }}" 
+         alt="Profile picture" 
+         width="300" >
+</div>
+  <div style="display: flex; justify-content: center;">
+
+        <h1>Chat with {{ receiver.username }}</h1>
+        </div>
+
+
+    </div>
+  </div>
+  <div class="right">
 <div class="chat-container">
-    <div class="chat-header">
+    {% comment %} <div class="chat-header">
         <h1>Chat with {{ receiver.username }}</h1>
         <p>You are: {{ sender.username }}</p>
-    </div>
+    </div> {% endcomment %}
     
+
+
     <div class="messages-container" id="messagesContainer">
         {% if messages %}
             {% for msg in messages %}
@@ -34,7 +55,11 @@
             </div>
         </form>
     </div>
+</div></div>
 </div>
+
+
+
 
 <script>
 // Auto-scroll to bottom on page load
@@ -53,28 +78,53 @@ document.getElementById('messageForm').addEventListener('submit', function() {
 </script>
 
 <style>
-.chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+    .container {
+        margin-top:20px;
+  display: flex;
+  gap: 20px; /* Optional: space between columns */
 }
 
-.chat-header {
-    background: #d2c1c1;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    height: 100px;
+.left {
+  flex: 1; /* Takes up equal space */
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
+        border-radius: 30px;
+  padding: 20px;
+  height:500px;
 }
+
+.right {
+  flex: 2; /* Takes up twice the space of left */
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
+        border-radius: 30px;
+  padding: 20px;
+}
+.chat-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-right:0px;
+}
+
+
+
 
 .messages-container {
-    height: 400px;
+    height: 500px;
     overflow-y: auto;
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
-    background: #fafafa;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
+        border-radius: 30px;
     display: flex;
     flex-direction: column;
 }
@@ -86,14 +136,14 @@ document.getElementById('messageForm').addEventListener('submit', function() {
 }
 
 .message.sent {
-    background: #dcf8c6;
+    background: #ff0000;
     text-align: right;
     margin-left: 50px;
     align-self: flex-end;
 }
 
 .message.received {
-    background: #ffffff;
+    background: #000000;
     margin-right: 50px;
     border: 1px solid #000000;
     align-self: flex-start;
@@ -101,17 +151,17 @@ document.getElementById('messageForm').addEventListener('submit', function() {
 
 .message strong {
     display: block;
-    color: #333;
+    color: #ffffff;
     font-size: 14px;
 }
 
 .message p {
     margin: 5px 0;
-    color: #333;
+    color: #ffffff;
 }
 
 .message small {
-    color: #666;
+    color: #ffffff;
     font-size: 12px;
 }
 
@@ -128,8 +178,11 @@ document.getElementById('messageForm').addEventListener('submit', function() {
 .message-form textarea {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(8px);
+        border-radius: 30px;
     resize: vertical;
     height: 50px;
 }

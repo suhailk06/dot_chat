@@ -13,27 +13,16 @@
                         <h5 class="card-title">{{ user.username }}</h5>
                     </div>
                     
-                    {% if user.status == 'friend' %}
-                        <!-- Already friends - Send Message -->
-                        <a href="{% url 'message_page' receiver_id=user.id %}">
-                            <button class="btn btn-dark">Send Message</button>
-                        </a>
-                    {% elif user.status == 'pending_sent' %}
-                        <!-- Request already sent by current user - Disabled -->
+                    {% if user.status == 'pending_sent' %}
                         <div id="requestbutton">
                             <button class="btn btn-dark" disabled>Request Sent</button>
                             <button class="btn btn-dark" disabled>Cancel</button>
                         </div>
                     {% elif user.status == 'pending_received' %}
-                        <!-- Request received from this user - Accept -->
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
                             <button class="btn btn-dark">Accept Request</button>
                         </a>
-                    {% elif user.status == 'pending' %}
-                        <!-- Generic pending state - Disabled -->
-                        <button class="btn btn-dark" disabled>Request Sent</button>
                     {% else %}
-                        <!-- No friendship relationship - Add Friend -->
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
                             <button class="btn btn-dark">Add Friend</button>
                         </a>
@@ -41,7 +30,7 @@
                 </div>
             </div>
         {% empty %}
-            <p style="color: white;">No users found.</p>
+            <p style="color: white;">No users found to add as friends.</p>
         {% endfor %}
     </div>
 </div>
