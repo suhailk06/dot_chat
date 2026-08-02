@@ -287,3 +287,43 @@ def add_friend(request, receiver_id):
         pass  # User not found
     
     return redirect('search_page')
+
+def delete_friend(request, receiver_id):
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
+    user_id = request.session.get('user_id')
+    
+    try:
+        # Check if friendship exists in either direction
+        friendship = FriendListDATA.objects.filter(
+            Q(user_id=user_id, friend_id=receiver_id) |
+            Q(user_id=receiver_id, friend_id=user_id)
+        ).first()
+        
+        if friendship:
+            friendship.delete()  # Delete the friendship
+    except FriendListDATA.DoesNotExist:
+        pass  # Friendship not found
+    
+    return redirect('home')
+def cancel_friend_request(request, receiver_id):
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
+    user_id = request.session.get('user_id')
+    
+    try:
+        # Check if a pending friend request exists from the current user to the receiver
+        pending_request = FriendListDATA.objects.filter(
+            user_id=user_id,
+            friend_id=receiver_id,
+            status='pending'
+        ).first()
+        
+        if pending_request:
+            pending_request.delete()  # Cancel the friend request
+    except FriendListDATA.DoesNotExist:
+        pass  # No pending request found
+    
+    return redirect('search_page')

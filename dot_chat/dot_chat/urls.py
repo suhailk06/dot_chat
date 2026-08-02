@@ -28,4 +28,6 @@ urlpatterns = [
     path('logout/',views.logout_page,name='logout'),
     path('message/<int:receiver_id>/', views.message_page, name='message_page'),
     path('add_friend/<int:receiver_id>/', views.add_friend, name='add_friend'),
+    path('delete_friend/<int:receiver_id>/', views.delete_friend, name='delete_friend'),
+    path('cancel_friend_request/<int:receiver_id>/', views.cancel_friend_request, name='cancel_friend_request'),
 ]

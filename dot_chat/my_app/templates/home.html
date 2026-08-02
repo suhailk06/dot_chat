@@ -18,9 +18,16 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ user.username }}</h5>
                     </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
                         <a href="{% url 'message_page' receiver_id=user.id %}">
                             <button class="btn btn-dark">Send Message</button>
                         </a>
+                        <a href="{% url 'delete_friend' receiver_id=user.id %}" style="text-decoration: none;">
+                            <button class="btn btn-danger">
+                                <i class="fas fa-user-minus me-2" style="color:white"></i>
+                            </button>
+                        </a>
+                    </div>
                 </div>
 
             </div>

@@ -9,6 +9,7 @@ class UserData(models.Model):
     profile_pic = models.CharField(max_length=255, default='default.png')
     bio = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
     
 
     

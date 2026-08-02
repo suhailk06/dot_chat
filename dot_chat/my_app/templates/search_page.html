@@ -17,7 +17,9 @@
                     {% if user.status == 'pending_sent' %}
                         <div id="requestbutton">
                             <button class="btn btn-dark" disabled>Request Sent</button>
-                            <button class="btn btn-dark" disabled>Cancel</button>
+                            <a href="{% url 'cancel_friend_request' receiver_id=user.id %}">
+                                <button class="btn btn-dark">Cancel</button>
+                            </a>
                         </div>
                     {% elif user.status == 'pending_received' %}
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
