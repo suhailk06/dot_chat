@@ -3,6 +3,7 @@
 {% block content %}
 <h1>search page</h1>
 <h1>{{ request.session.username }}</h1>
+<h1>{{ req }}</h1>
 <div class="container text-center">
     <div class="row">
         {% for user in users %}
@@ -20,7 +21,7 @@
                         </div>
                     {% elif user.status == 'pending_received' %}
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
-                            <button class="btn btn-dark">Accept Request</button>
+                            <button class="btn btn-danger">Accept Request</button>
                         </a>
                     {% else %}
                         <a href="{% url 'add_friend' receiver_id=user.id %}">

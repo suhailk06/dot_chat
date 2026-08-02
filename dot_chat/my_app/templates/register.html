@@ -34,16 +34,22 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="register-card">
             <h2><i class="fas fa-user-plus me-2"></i>Create Account</h2>
-            
+{% if messages %}
+    {% for message in messages %}
+        <script>
+            alert("{{ message }}");
+        </script>
+    {% endfor %}
+{% endif %}            
             <!-- Messages -->
-            {% if messages %}
+            {% comment %} {% if messages %}
                 {% for message in messages %}
                     <div class="alert-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
                         <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %} me-2"></i>
                         {{ message }}
                     </div>
                 {% endfor %}
-            {% endif %}
+            {% endif %} {% endcomment %}
             
             <!-- Registration Form -->
             <form method="POST" enctype="multipart/form-data">

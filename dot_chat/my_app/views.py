@@ -19,6 +19,26 @@ def home(request):
         return redirect('login')
     
     user_id = request.session.get('user_id')
+    users = UserData.objects.exclude(id=user_id)
+    req=0
+    for user in users:
+            # Check for pending requests
+            pending_sent = FriendListDATA.objects.filter(
+                user_id=user_id, 
+                friend_id=user.id, 
+                status='pending'
+            ).exists()
+            
+            pending_received = FriendListDATA.objects.filter(
+                user_id=user.id, 
+                friend_id=user_id, 
+                status='pending'
+            ).exists()
+            
+            if pending_received:
+                user.status = 'pending_received'
+                req+=1
+
     
     # Get list of friend IDs where status is 'friend'
     friend_ids = FriendListDATA.objects.filter(
@@ -39,7 +59,8 @@ def home(request):
     # Get user data for those friends
     friends = UserData.objects.filter(id__in=all_friend_ids)
     
-    return render(request, 'home.html', {'friends': friends})
+    return render(request, 'home.html', {'friends': friends,'req':req})
+
 
 def search_page(request):
     # Check if user is logged in
@@ -65,6 +86,12 @@ def search_page(request):
     
     # Get users excluding friends
     users = UserData.objects.exclude(id=user_id).exclude(id__in=all_friend_ids)
+    req=0
+    
+    # Create lists to categorize users
+    pending_received_users = []
+    pending_sent_users = []
+    no_status_users = []
     
     # Add status for each user
     for user in users:
@@ -83,12 +110,20 @@ def search_page(request):
         
         if pending_sent:
             user.status = 'pending_sent'
+            pending_sent_users.append(user)
         elif pending_received:
             user.status = 'pending_received'
+            pending_received_users.append(user)
+            req += 1
         else:
             user.status = 'none'
+            no_status_users.append(user)
     
-    return render(request, 'search_page.html', {'users': users})
+    # Combine the lists in the desired order
+    ordered_users = pending_received_users + pending_sent_users + no_status_users
+    
+    return render(request, 'search_page.html', {'users': ordered_users, 'req': req})
+
 
 def register_page(request):
     # If user is already logged in, redirect to home
@@ -110,11 +145,9 @@ def register_page(request):
                 user.profile_pic = profile_pic.name
                 user.save()
             
-            messages.success(request, 'Registration successful! Please login.')
             return redirect('login')
         else:
-            for error in form.errors.values():
-                messages.error(request, error)
+            messages.error(request, 'Something went wrong!')
     
     else:
         form = UserForm()
@@ -135,15 +168,14 @@ def login_page(request):
             user_data = UserData.objects.get(username=username)
             # Check password using Django's check_password
             if check_password(password, user_data.password):
-                messages.success(request, f'Welcome {username}! You are now logged in.')
                 # Store user_id in session
                 request.session['user_id'] = user_data.id
                 request.session['username'] = user_data.username
                 return redirect('home')
             else:
-                messages.error(request, 'Invalid username or password.')
+                messages.error(request, 'Wrong username or password!') # Invalid credentials will be handled in template
         except UserData.DoesNotExist:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Username does not exist!') # Invalid credentials will be handled in template
     
     return render(request, 'login.html')
 
@@ -159,13 +191,11 @@ def logout_page(request):
     # Flush the session completely
     request.session.flush()
     
-    messages.success(request, 'You have been logged out successfully.')
     return redirect('login')
 
 def message_page(request, receiver_id):
     # Check if user is logged in
     if 'user_id' not in request.session:
-        messages.error(request, 'Please login first.')
         return redirect('login')
     
     sender_id = request.session.get('user_id')
@@ -178,9 +208,6 @@ def message_page(request, receiver_id):
         Q(user_id=receiver_id, friend_id=sender_id, status='friend')
     ).exists()
     
-    if not are_friends:
-        messages.warning(request, f'You are not friends with {receiver.username}. Messages may be limited.')
-    
     # Handle POST request - Sending a message
     if request.method == 'POST':
         message_text = request.POST.get('message', '').strip()
@@ -192,9 +219,8 @@ def message_page(request, receiver_id):
                 sender=sender,
                 receiver=receiver
             )
-            messages.success(request, f'Message sent to {receiver.username}!')
         else:
-            messages.error(request, 'Message cannot be empty.')
+            pass  # Empty message will be handled in template
         
         # Redirect to the same page to avoid form resubmission
         return redirect('message_page', receiver_id=receiver_id)
@@ -218,13 +244,11 @@ def message_page(request, receiver_id):
 
 def add_friend(request, receiver_id):
     if 'user_id' not in request.session:
-        messages.error(request, 'Please login first.')
         return redirect('login')
     
     user_id = request.session.get('user_id')
     
     if user_id == receiver_id:
-        messages.error(request, "You cannot add yourself as a friend.")
         return redirect('search_page')
     
     try:
@@ -239,19 +263,18 @@ def add_friend(request, receiver_id):
         
         if existing_friendship:
             if existing_friendship.status == 'friend':
-                messages.warning(request, f"You are already friends with {friend.username}.")
+                pass  # Already friends
             elif existing_friendship.status == 'pending':
                 # If the other user sent the request, accept it
                 if existing_friendship.user_id == receiver_id:
                     existing_friendship.status = 'friend'
                     existing_friendship.save()
-                    messages.success(request, f"You accepted {friend.username}'s friend request!")
                 else:
-                    messages.info(request, f"You already sent a friend request to {friend.username}.")
+                    pass  # Request already sent
             elif existing_friendship.status == 'blocked':
-                messages.error(request, f"You cannot add {friend.username} to your friends.")
+                pass  # Cannot add blocked user
             else:
-                messages.warning(request, f"You are already in {friend.username}'s friend list.")
+                pass  # Already in friend list
         else:
             # Create new friend request
             friendship = FriendListDATA.objects.create(
@@ -259,9 +282,8 @@ def add_friend(request, receiver_id):
                 friend=friend,
                 status='pending'
             )
-            messages.success(request, f"Friend request sent to {friend.username}!")
             
     except UserData.DoesNotExist:
-        messages.error(request, "User not found.")
+        pass  # User not found
     
     return redirect('search_page')
