@@ -1,3 +1,6 @@
+from email.mime import message
+import random
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -9,15 +12,20 @@ from django.db.models import Q
 from my_app.forms import UserForm
 from my_app.models import MessageData, UserData, FriendListDATA
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
 
 def index(request):
     return render(request, 'index.html')
 
 def home(request):
     # Check if user is logged in
-    if 'user_id' not in request.session:
+    if 'user_id' not in request.session or not UserData.objects.filter(
+        id=request.session['user_id'], 
+        is_verified=True
+    ).exists():
         return redirect('login')
-    
+
     user_id = request.session.get('user_id')
     users = UserData.objects.exclude(id=user_id)
     req=0
@@ -58,8 +66,10 @@ def home(request):
     
     # Get user data for those friends
     friends = UserData.objects.filter(id__in=all_friend_ids)
-    
-    return render(request, 'home.html', {'friends': friends,'req':req})
+    unseen_messages = set(MessageData.objects.filter(
+    receiver_id=user_id, seen=False).values_list('sender_id', flat=True))
+    print("Unseen messages from user IDs:", unseen_messages)
+    return render(request, 'home.html', {'friends': friends,'req':req,'unseen_messages': unseen_messages})
 
 
 def search_page(request):
@@ -124,18 +134,38 @@ def search_page(request):
     
     return render(request, 'search_page.html', {'users': ordered_users, 'req': req})
 
+def verify_otp(request, user_id,otp_code):
+    if request.method == 'POST':
+        otp= request.POST.get('otp')
+        if otp==otp_code:
+            user = UserData.objects.get(id=user_id)
+            user.is_verified = True
+            user.save()
+            messages.success(request, 'Your account has been verified. You can now log in.')
+            return redirect('login')
+    return render(request, 'verify_otp.html', {'user_id': user_id, 'otp_code': otp_code})
 
 def register_page(request):
     # If user is already logged in, redirect to home
+    UserData.objects.filter(is_verified=False).delete()
     if 'user_id' in request.session:
         return redirect('home')
     
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES)
-        
+        email = request.POST.get('email')
         if form.is_valid():
             # Save the user with hashed password
             user = form.save()
+            otp=str(random.randint(100000, 999999))  # Generate a random 6-digit OTP
+            message = f"Your verification code is: {otp}"
+            send_mail(
+                    "Verification Code",
+                    message,  # Now this is a string
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,)
+            
             
             # Handle profile pic upload
             if 'profile_pic' in request.FILES:
@@ -145,7 +175,7 @@ def register_page(request):
                 user.profile_pic = profile_pic.name
                 user.save()
             
-            return redirect('login')
+            return redirect('verify_otp', user_id=user.id, otp_code=otp)
         else:
             messages.error(request, 'Something went wrong!')
     
@@ -156,9 +186,12 @@ def register_page(request):
 
 def login_page(request):
     # If user is already logged in, redirect to home
+    UserData.objects.filter(is_verified=False).delete()
     if 'user_id' in request.session:
-        return redirect('home')
+        return redirect('home')  # Redirect to home if already logged in
     
+    # Rest of your login page logic (show login form, etc.)
+    # Rest of your view logic...
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -207,7 +240,13 @@ def message_page(request, receiver_id):
         Q(user_id=sender_id, friend_id=receiver_id, status='friend') |
         Q(user_id=receiver_id, friend_id=sender_id, status='friend')
     ).exists()
+    pending_message=MessageData.objects.filter(
+        Q(sender=receiver, receiver=sender, seen=False)
+    )
     
+    for msg in pending_message:
+        msg.seen=True
+        msg.save()
     # Handle POST request - Sending a message
     if request.method == 'POST':
         message_text = request.POST.get('message', '').strip()
@@ -223,7 +262,7 @@ def message_page(request, receiver_id):
             pass  # Empty message will be handled in template
         
         # Redirect to the same page to avoid form resubmission
-        return redirect('message_page', receiver_id=receiver_id)
+        return redirect('message_page', receiver_id=receiver_id,)
     
     # Handle GET request - Display the chat page
     # Get all messages between sender and receiver

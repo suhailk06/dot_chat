@@ -131,3 +131,20 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'     # Destination for collectstatic
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# settings.py
+
+# settings.py - Add these configurations
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'dotchat06@gmail.com'  # Your Gmail
+EMAIL_HOST_PASSWORD = 'xlasaqeynwsmgrsy'  # App Password from Google
+EMAIL_OTP_EXPIRY_MINUTES = 5
+
+# Session settings for OTP
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 3600  # 1 hour

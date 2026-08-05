@@ -31,6 +31,8 @@ class MessageData(models.Model):
         # No to_field parameter - defaults to primary key (id)
     )
     message_time = models.DateTimeField(auto_now_add=True)
+    seen = models.BooleanField(default=False)
+    
     
     
     def __str__(self):

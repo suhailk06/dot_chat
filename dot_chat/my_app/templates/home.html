@@ -8,7 +8,6 @@
 {% block content %}
 <h1>home page</h1>
 <h1>{{ request.session.username }}</h1>
-
 <div class="container text-center" >
     <div class="row">
         {% for user in friends %}
@@ -22,6 +21,11 @@
                         <a href="{% url 'message_page' receiver_id=user.id %}">
                             <button class="btn btn-dark">Send Message</button>
                         </a>
+                        {%if user.id in unseen_messages %}
+                        <button class="btn btn-dark">
+                        <i class="fas fa-bell me-2" style="color:white"></i>
+                        </button>
+                        {%endif%}
                         <a href="{% url 'delete_friend' receiver_id=user.id %}" style="text-decoration: none;">
                             <button class="btn btn-danger">
                                 <i class="fas fa-user-minus me-2" style="color:white"></i>
