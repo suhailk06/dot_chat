@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<h1>search page</h1>
-<h1>{{ request.session.username }}</h1>
-<h1>{{ req }}</h1>
-<div class="container text-center">
+<div class="container text-center" style="margin-top: 2rem; margin-bottom: 2rem;">
     <div class="row">
         {% for user in users %}
             <div class="col-md-3 col-sm-6 mb-4">
@@ -13,23 +10,24 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ user.username }}</h5>
                     </div>
-                    
+
                     {% if user.status == 'pending_sent' %}
                         <div id="requestbutton">
                             <button class="btn btn-dark" disabled>Request Sent</button>
                             <a href="{% url 'cancel_friend_request' receiver_id=user.id %}">
-                                <button class="btn btn-dark">Cancel</button>
+                                <button class="btn" style="background: black; color: white;">Cancel</button>
                             </a>
                         </div>
                     {% elif user.status == 'pending_received' %}
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
-                            <button class="btn btn-danger">Accept Request</button>
+                            <button class="btn" style="background: #214ec1; color: white;">Accept Request</button>
                         </a>
                     {% else %}
                         <a href="{% url 'add_friend' receiver_id=user.id %}">
-                            <button class="btn btn-dark">Add Friend</button>
+                            <button class="btn" style="background: black; color: white;">Add Friend</button>
                         </a>
                     {% endif %}
+
                 </div>
             </div>
         {% empty %}
@@ -46,7 +44,6 @@
         backdrop-filter: blur(8px);
         border-radius: 30px;
         padding: 0.5rem 1.8rem;
-        box-shadow: 0 20px 50px rgba(180, 20, 30, 0.3);
         max-width: 500px;
         width: 100%;
         height: 85%;
