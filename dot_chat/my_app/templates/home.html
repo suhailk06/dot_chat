@@ -3,12 +3,13 @@
 {%block nav_content%}
 {%if req > 0 %}
     <a class="navbar-brand disabled" style="color:white" href="/search_page">Requests ({{ req }})</a>
+
 {%endif%}
+<a href="/user_profile"><img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Logo" width=35></a>
+
 {% endblock %}
 {% block content %}
-<h1>home page</h1>
-<h1>{{ request.session.username }}</h1>
-<div class="container text-center" >
+<div class="container text-center" style="margin-top: 2rem; margin-bottom: 2rem;">
     <div class="row">
         {% for user in friends %}
             <div class="col-md-3 col-sm-6 mb-4">

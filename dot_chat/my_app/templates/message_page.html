@@ -34,6 +34,13 @@
                     {% comment %} <strong>{{ msg.sender.username }}</strong> {% endcomment %}
                     <p>{{ msg.message }}</p>
                     <small>{{ msg.message_time|date:"Y-m-d H:i" }}</small>
+                    {%if msg.sender_id is sender.id %}
+                    {%if msg.seen %}
+                        <span>Seen</span>
+                    {% else %}
+                        <span>Unseen</span>
+                    {% endif %}
+                    {%endif%}
                 </div>
             {% endfor %}
         {% else %}
@@ -80,6 +87,7 @@ document.getElementById('messageForm').addEventListener('submit', function() {
 <style>
     .container {
         margin-top:20px;
+        margin-bottom:20px;
   display: flex;
   gap: 20px; /* Optional: space between columns */
 }

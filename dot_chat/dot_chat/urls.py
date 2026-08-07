@@ -30,5 +30,6 @@ urlpatterns = [
     path('add_friend/<int:receiver_id>/', views.add_friend, name='add_friend'),
     path('delete_friend/<int:receiver_id>/', views.delete_friend, name='delete_friend'),
     path('cancel_friend_request/<int:receiver_id>/', views.cancel_friend_request, name='cancel_friend_request'),
-    path('verify_otp/<int:user_id>/<str:otp_code>/', views.verify_otp, name='verify_otp'),
+    path('verify_otp/<int:user_id>/', views.verify_otp, name='verify_otp'),
+    path('user_profile/', views.user_profile, name='user_profile')
 ]

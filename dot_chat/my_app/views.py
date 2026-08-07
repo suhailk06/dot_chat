@@ -69,7 +69,18 @@ def home(request):
     unseen_messages = set(MessageData.objects.filter(
     receiver_id=user_id, seen=False).values_list('sender_id', flat=True))
     print("Unseen messages from user IDs:", unseen_messages)
-    return render(request, 'home.html', {'friends': friends,'req':req,'unseen_messages': unseen_messages})
+    user=UserData.objects.get(id=user_id)
+    return render(request, 'home.html', {'friends': friends,'req':req,'unseen_messages': unseen_messages, 'user': user})
+
+def user_profile(request):
+    # Check if user is logged in
+    if 'user_id' not in request.session:
+        return redirect('login')
+    
+    user_id = request.session.get('user_id')
+    user = UserData.objects.get(id=user_id)
+    
+    return render(request, 'user_profile_page.html', {'user': user})
 
 
 def search_page(request):
@@ -134,16 +145,19 @@ def search_page(request):
     
     return render(request, 'search_page.html', {'users': ordered_users, 'req': req})
 
-def verify_otp(request, user_id,otp_code):
+def verify_otp(request, user_id):
     if request.method == 'POST':
         otp= request.POST.get('otp')
-        if otp==otp_code:
+        if otp==request.session.get('otp'):
             user = UserData.objects.get(id=user_id)
             user.is_verified = True
             user.save()
             messages.success(request, 'Your account has been verified. You can now log in.')
             return redirect('login')
-    return render(request, 'verify_otp.html', {'user_id': user_id, 'otp_code': otp_code})
+        else:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return redirect('verify_otp', user_id=user_id)
+    return render(request, 'verify_otp.html', {'user_id': user_id})
 
 def register_page(request):
     # If user is already logged in, redirect to home
@@ -159,6 +173,7 @@ def register_page(request):
             user = form.save()
             otp=str(random.randint(100000, 999999))  # Generate a random 6-digit OTP
             message = f"Your verification code is: {otp}"
+            request.session['otp'] = otp  # Store OTP in session for later verification
             send_mail(
                     "Verification Code",
                     message,  # Now this is a string
@@ -175,7 +190,7 @@ def register_page(request):
                 user.profile_pic = profile_pic.name
                 user.save()
             
-            return redirect('verify_otp', user_id=user.id, otp_code=otp)
+            return redirect('verify_otp', user_id=user.id)
         else:
             messages.error(request, 'Something went wrong!')
     
@@ -235,6 +250,7 @@ def message_page(request, receiver_id):
     sender = UserData.objects.get(id=sender_id)
     receiver = UserData.objects.get(id=receiver_id)
     
+    
     # Check if users are friends (optional but recommended)
     are_friends = FriendListDATA.objects.filter(
         Q(user_id=sender_id, friend_id=receiver_id, status='friend') |
@@ -243,7 +259,6 @@ def message_page(request, receiver_id):
     pending_message=MessageData.objects.filter(
         Q(sender=receiver, receiver=sender, seen=False)
     )
-    
     for msg in pending_message:
         msg.seen=True
         msg.save()
@@ -270,7 +285,9 @@ def message_page(request, receiver_id):
         Q(sender=sender, receiver=receiver) |
         Q(sender=receiver, receiver=sender)
     ).order_by('message_time')
-    
+    unseen_messages = MessageData.objects.filter(
+        Q(sender=sender, receiver=receiver, seen=False)
+    ).exists()
     return render(request, 'message_page.html', {
         'sender': sender,
         'receiver': receiver,
@@ -279,6 +296,7 @@ def message_page(request, receiver_id):
         'messages': messages_list,
         'username': sender.username,
         'are_friends': are_friends,
+        'unseen_messages': unseen_messages
     })
 
 def add_friend(request, receiver_id):
