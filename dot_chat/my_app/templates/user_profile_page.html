@@ -35,7 +35,9 @@
 {{ user.username }}</h1>
             </div>
             <p>{{user.bio}}</p>
-            <h1>Friend: {{ friend_ids|length }}</h1>
+            <h1><a href="{% url 'friend_list' user_id=user.id %}">
+                            <button class="btn" style="background: black; color: white;">Friend: {{ friend_ids|length }}</button>
+                        </a></h1>
             <div>
                 {% if friend_status == 'self' %}
                         <a href="/#">

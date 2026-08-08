@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import check_password
 from django.db.models import Q
+from numpy import append
 from my_app.forms import UserForm
 from my_app.models import MessageData, UserData, FriendListDATA
 from django.db.models import Q
@@ -109,6 +110,76 @@ def user_profile(request, user_id):
         'friend_ids': friend_ids,
         'friend_status': friend_status
     })
+
+def friend_list(request, user_id):
+    # Check if user is logged in
+    if 'user_id' not in request.session:
+        return redirect('login')
+
+    friends_list=FriendListDATA.objects.filter(
+        Q(user_id=user_id, status='friend') |
+        Q(friend_id=user_id, status='friend')
+    )
+    friends_ids= set()
+    for friendship in friends_list:
+        if friendship.user_id == user_id:
+            friends_ids.add(friendship.friend_id)
+        else:
+            friends_ids.add(friendship.user_id)
+    friends_idx = UserData.objects.filter(id__in=friends_ids)
+    
+    # Create lists to categorize users
+    self_user=[]
+    friend_users = []
+    pending_received_users = []
+    pending_sent_users = []
+    no_status_users = []
+    user_id=request.session.get('user_id')
+    print(user_id)
+    # Add status for each user
+    for user in friends_idx:
+        # Check for pending requests
+                
+        friend=FriendListDATA.objects.filter(
+            Q(user_id=user_id, friend_id=user.id) | 
+            Q(user_id=user.id, friend_id=user_id)
+        ).first()
+        pending_sent = FriendListDATA.objects.filter(
+            user_id=user_id, 
+            friend_id=user.id, 
+            status='pending'
+        ).exists()
+        
+        pending_received = FriendListDATA.objects.filter(
+            user_id=user.id, 
+            friend_id=user_id, 
+            status='pending'
+        ).exists()
+        
+        if user.id==user_id:
+            user.status='self'
+            self_user.append(user)
+        
+        elif friend:
+            user.status = 'friend'
+            friend_users.append(user)
+        
+        elif pending_sent:
+            user.status = 'pending_sent'
+            pending_sent_users.append(user)
+        elif pending_received:
+            user.status = 'pending_received'
+            pending_received_users.append(user)
+            req += 1
+        else:
+            user.status = 'none'
+            no_status_users.append(user)
+    
+    # Combine the lists in the desired order
+    ordered_users =self_user+friend_users+ pending_received_users + pending_sent_users + no_status_users
+    for i in ordered_users:
+        print(i,i.status)
+    return render(request, 'friend_list_page.html', {'friends': ordered_users})
 
 def search_page(request):
     # Check if user is logged in
