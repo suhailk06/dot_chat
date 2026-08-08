@@ -5,7 +5,9 @@
     <a class="navbar-brand disabled" style="color:white" href="/search_page">Requests ({{ req }})</a>
 
 {%endif%}
-<a href="/user_profile"><img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Logo" width=35></a>
+<a href="{% url 'user_profile' user_id=user.id %}">
+    <img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Logo" width=35>
+</a>
 
 {% endblock %}
 {% block content %}
@@ -14,7 +16,9 @@
         {% for user in friends %}
             <div class="col-md-3 col-sm-6 mb-4">
                 <div class="card" >
-                    <img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Profile picture" class="card-img-top" >
+                    <a href="{% url 'user_profile' user_id=user.id %}">
+                        <img src="{% static 'images/' %}{{ user.profile_pic }}" alt="Profile picture" class="card-img-top" >
+                    </a>
                     <div class="card-body">
                         <h5 class="card-title">{{ user.username }}</h5>
                     </div>

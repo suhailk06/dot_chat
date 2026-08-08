@@ -20,7 +20,6 @@
             -webkit-backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 2.5rem 2rem;
-            box-shadow: 0 20px 50px rgba(180, 20, 30, 0.3);
             max-width: 520px;
             width: 100%;
             text-align: center;
@@ -36,7 +35,41 @@
 {{ user.username }}</h1>
             </div>
             <p>{{user.bio}}</p>
+            <h1>Friend: {{ friend_ids|length }}</h1>
+            <div>
+                {% if friend_status == 'self' %}
+                        <a href="/#">
+                            <button class="btn" style="background: black; color: white;">Edit Profile</button>
+                        </a>
+                {% elif friend_status == 'friend' %}
+                        <a href="{% url 'message_page' receiver_id=user.id %}">
+                            <button class="btn" style="background: black; color: white;">Send Message</button>
+                        </a>
+                                                <a href="{% url 'delete_friend' receiver_id=user.id %}" style="text-decoration: none;">
+                            <button class="btn" style="background: red; color: white;">
+                                <i class="fas fa-user-minus me-2"></i>
+                            </button>
+                        </a>
+                {% elif friend_status == 'pending_sent' %}
+                    <div id="requestbutton">
+                        <button class="btn btn-dark" disabled>Request Sent</button>
+                        <a href="{% url 'cancel_friend_request' receiver_id=user.id %}">
+                            <button class="btn" style="background: black; color: white;">Cancel</button>
+                            </a>
+                        </div>
+                    {% elif friend_status == 'pending_received' %}
+                        <a href="{% url 'add_friend' receiver_id=user.id %}">
+                            <button class="btn" style="background: #214ec1; color: white;">Accept Request</button>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'add_friend' receiver_id=user.id %}">
+                            <button class="btn" style="background: black; color: white;">Add Friend</button>
+                        </a>
+                    {% endif %}
+
+                </div>
             </div>
+            
     </div>
 
 </body>

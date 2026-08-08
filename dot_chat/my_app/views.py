@@ -72,16 +72,43 @@ def home(request):
     user=UserData.objects.get(id=user_id)
     return render(request, 'home.html', {'friends': friends,'req':req,'unseen_messages': unseen_messages, 'user': user})
 
-def user_profile(request):
+def user_profile(request, user_id):
     # Check if user is logged in
     if 'user_id' not in request.session:
         return redirect('login')
     
-    user_id = request.session.get('user_id')
     user = UserData.objects.get(id=user_id)
     
-    return render(request, 'user_profile_page.html', {'user': user})
+    # Get all friend IDs of the current user
+    friend_list = FriendListDATA.objects.filter(
+        Q(user_id=user_id, status='friend') |
+        Q(friend_id=user_id, status='friend')
+    )
 
+    # Extract actual user IDs from the friend relationships
+    friend_ids = set()
+    for friendship in friend_list:
+        if friendship.user_id == user_id:
+            friend_ids.add(friendship.friend_id)
+        else:
+            friend_ids.add(friendship.user_id)
+            
+            
+    # Now find mutual friends
+    friend_status=""
+    if user_id == request.session.get('user_id'):
+        friend_status="self"
+    elif FriendListDATA.objects.filter(user_id=request.session.get('user_id'), friend_id=user_id, status='friend').exists() or FriendListDATA.objects.filter(user_id=user_id, friend_id=request.session.get('user_id'), status='friend').exists():
+        friend_status="friend"
+    elif FriendListDATA.objects.filter(user_id=request.session.get('user_id'), friend_id=user_id, status='pending').exists():
+        friend_status="pending_sent"
+    elif FriendListDATA.objects.filter(user_id=user_id, friend_id=request.session.get('user_id'), status='pending').exists():
+        friend_status="pending_received"
+    return render(request, 'user_profile_page.html', {
+        'user': user,
+        'friend_ids': friend_ids,
+        'friend_status': friend_status
+    })
 
 def search_page(request):
     # Check if user is logged in
