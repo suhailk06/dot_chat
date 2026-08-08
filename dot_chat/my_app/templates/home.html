@@ -24,17 +24,17 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <a href="{% url 'message_page' receiver_id=user.id %}">
-                            <button class="btn" style="background: black; color: white;">Send Message</button>
+                            <button class="btn" style="background: black; color: white;">Send Message </button>
                         </a>
                         {%if user.id in unseen_messages %}
-                        <button class="btn" style="background: black; color: white;">
+                        
                         <i class="fas fa-bell me-2" style="color:white"></i>
-                        </button>
                         {%endif%}
-                        <a href="{% url 'delete_friend' receiver_id=user.id %}" style="text-decoration: none;">
-                            <button class="btn" style="background: red; color: white;">
-                                <i class="fas fa-user-minus me-2"></i>
-                            </button>
+                        
+                        <a href="{% url 'delete_friend' receiver_id=user.id %}">
+
+                                <i class="fas fa-user-minus me-2" style="color:red"></i>
+
                         </a>
                     </div>
                 </div>
