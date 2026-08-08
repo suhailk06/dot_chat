@@ -10,7 +10,7 @@ class UserData(models.Model):
     bio = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
-    
+    verified_otp = models.IntegerField(default=000000, max_length=6)  
 
     
     def __str__(self):

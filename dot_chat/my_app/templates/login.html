@@ -4,66 +4,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dot Chat · Register</title>
+    <title>Dot Chat · Login</title>
     <!-- Bootstrap 5 + Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-image: url({% static 'images/dot_chat_background.png' %});
+            background-attachment: fixed;
             background-size: cover;
+            background-position: center;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
-                .login-card {
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+
+        .login-card {
+            margin-top: 5rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 30px;
             padding: 2.5rem 2rem;
-            box-shadow: 0 20px 50px rgba(180, 20, 30, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
             max-width: 520px;
             width: 100%;
+            height:100%;
             text-align: center;
         }
-        </style>
+
+        .login-card h2 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-card h2 i {
+            color: #ffffff;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        .form-label {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            text-align: left;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        input:focus {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        input.error {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+        }
+
+        .field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .field-wrapper input {
+            flex: 1;
+            padding-right: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #6c5ce7;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4a3db8;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .btn-dark {
+            background-image: url({% static 'images/dot_chat_background.png' %});
+            border: none;
+            padding: 12px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-dark i {
+            margin-right: 8px;
+        }
+
+        .register-link {
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .alert-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .alert {
+            border-radius: 12px;
+            font-size: 14px;
+            padding: 10px 15px;
+            border: none;
+        }
+
+        .alert-success {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            backdrop-filter: blur(5px);
+        }
+
+        .alert-error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            backdrop-filter: blur(5px);
+        }
+
+        .alert-info {
+            background: rgba(108, 92, 231, 0.2);
+            color: #a29bfe;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Small extra polish */
+        .mb-3 {
+            margin-bottom: 1.25rem;
+        }
+    </style>
 </head>
 <body>
-        <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="container d-flex justify-content-center" style="min-height: 100vh; padding-top: 2rem; padding-bottom: 2rem;">
         <div class="login-card">
-    <h2>Login</h2>
-    
-{% if messages %}
-    {% for message in messages %}
-        <script>
-            alert("{{ message }}");
-        </script>
-    {% endfor %}
-{% endif %}
-    
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- Manual form fields instead of {{ form.as_p }} -->
+            <h2>Login</h2>
+
+            <!-- Display messages (alerts) -->
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- Username Field -->
                 <div class="mb-3">
-                    <label for="id_username" class="form-label">
+                    <label for="username" class="form-label">
                         <i class="fas fa-user me-2"></i>Username
-                    </label><br>
-            <input type="text" name="username" id="username" required>
-        </div>
-        
+                    </label>
+                    <input type="text"
+                           name="username"
+                           id="username"
+                           value="{{ username|default:'' }}"
+                           class="{% if errors.username %}error{% endif %}"
+                           placeholder="Enter your username"
+                           required>
+                    {% if errors.username %}
+                        <div class="error-message">{{ errors.username }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field with toggle -->
                 <div class="mb-3">
-                    <label for="id_password1" class="form-label">
+                    <label for="password" class="form-label">
                         <i class="fas fa-lock me-2"></i>Password
-                    </label><br>
-            <input type="password" name="password" id="password" required>
+                    </label>
+                    <div class="field-wrapper">
+                        <input type="password"
+                               name="password"
+                               id="password"
+                               class="{% if errors.password %}error{% endif %}"
+                               placeholder="Enter your password"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.password %}
+                        <div class="error-message">{{ errors.password }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-dark">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+
+                <!-- Register Link -->
+                <div class="register-link">
+                    Don't have an account? <a href="{% url 'register' %}">Register here</a>
+                </div>
+            </form>
         </div>
-
-        <button type="submit" class="btn btn-dark">Login</button>
-                    <p>Don't have an account? <a href="{% url 'register' %}" style="color: #ffffff; text-decoration: underline;">Register here</a></p>
-    </form>
-
-            </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Optional: add small validation feedback for password field (if needed)
+        document.addEventListener('DOMContentLoaded', function() {
+            const password = document.getElementById('password');
+            // You can add any extra login-specific JS here if desired.
+        });
+    </script>
 </body>
 </html>

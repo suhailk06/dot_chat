@@ -29,7 +29,7 @@
             backdrop-filter: blur(8px);
             border-radius: 30px;
             padding: 2rem 1.8rem;
-            box-shadow: 0 20px 50px rgba(180, 20, 30, 0.3);
+
             max-width: 580px;
             width: 100%;
         }
@@ -42,7 +42,7 @@
 
         .chat-header h2 {
             font-weight: 700;
-            color: #1e1e1e;
+            color: #ffffff;
             letter-spacing: -0.3px;
         }
 
@@ -54,7 +54,7 @@
         }
 
         .btn-send {
-            background-color: black;
+            background-image: url({% static 'images/dot_chat_background.png' %});
             color: white;
             border: none;
             padding: 14px 40px;
@@ -62,17 +62,11 @@
             font-weight: 600;
             font-size: 1.05rem;
             letter-spacing: 0.3px;
-            box-shadow: 0 4px 12px rgba(180, 20, 30, 0.2);
             width: auto;
             min-width: 180px;
             cursor: pointer;
         }
 
-        .btn-send:hover {
-            opacity: 0.85;
-            transform: scale(1.02);
-            background-color: #1e1e1e;
-        }
 
         @media (max-width: 480px) {
             .chat-container { padding: 1.2rem; }

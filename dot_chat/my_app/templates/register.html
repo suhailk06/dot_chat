@@ -11,134 +11,384 @@
     <style>
         body {
             background-image: url({% static 'images/dot_chat_background.png' %});
+            background-attachment: fixed;
             background-size: cover;
+            background-position: center;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
+
         .register-card {
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 30px;
             padding: 2.5rem 2rem;
-            box-shadow: 0 20px 50px rgba(180, 20, 30, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
             max-width: 520px;
             width: 100%;
             text-align: center;
         }
 
-        
+        .register-card h2 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
 
+        .register-card h2 i {
+            color: #ffffff;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+        .form-label {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+            text-align: left;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        input:focus {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        input.error {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+        }
+
+        #password {
+            width: 90%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        #confirm_password {
+            width: 90%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #2d3436;
+            transition: all 0.3s ease;
+            outline: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-input::placeholder {
+            color: #a0aec0;
+            font-weight: 400;
+        }
+
+        .field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .field-wrapper input {
+            flex: 1;
+            padding-right: 50px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #6c5ce7;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #4a3db8;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: left;
+            margin-top: 5px;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .password-requirements p {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .password-requirements ul li {
+            font-size: 12px;
+            padding: 3px 0;
+            transition: all 0.3s ease;
+        }
+
+        .password-requirements ul li.valid {
+            color: #51cf66;
+        }
+
+        .password-requirements ul li.invalid {
+            color: #ff6b6b;
+        }
+
+        .password-requirements ul li .check {
+            display: inline-block;
+            width: 18px;
+            font-weight: 700;
+        }
+
+        .btn-dark {
+            background-image: url({% static 'images/dot_chat_background.png' %});
+            border: none;
+            padding: 12px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+
+        .btn-dark i {
+            margin-right: 8px;
+        }
+
+        .login-link {
+            margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .login-link a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .alert-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .alert {
+            border-radius: 12px;
+            font-size: 14px;
+            padding: 10px 15px;
+            border: none;
+        }
+
+        .alert-success {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            backdrop-filter: blur(5px);
+        }
+
+        .alert-error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            backdrop-filter: blur(5px);
+        }
+
+        .alert-info {
+            background: rgba(108, 92, 231, 0.2);
+            color: #a29bfe;
+            backdrop-filter: blur(5px);
+        }
+
+       
     </style>
 </head>
 <body>
-    <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="container d-flex justify-content-center" style="min-height: 100vh; padding-top: 2rem; padding-bottom: 2rem;">
         <div class="register-card">
             <h2><i class="fas fa-user-plus me-2"></i>Create Account</h2>
-{% if messages %}
-    {% for message in messages %}
-        <script>
-            alert("{{ message }}");
-        </script>
-    {% endfor %}
-{% endif %}            
-            <!-- Messages -->
-            {% comment %} {% if messages %}
-                {% for message in messages %}
-                    <div class="alert-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
-                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %} me-2"></i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %} {% endcomment %}
             
-            <!-- Registration Form -->
-            <form method="POST" enctype="multipart/form-data">
+            <!-- Display messages -->
+            {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 
-                <!-- Username -->
+                <!-- Username Field -->
                 <div class="mb-3">
-                    <label for="id_username" class="form-label">
+                    <label for="username" class="form-label">
                         <i class="fas fa-user me-2"></i>Username
-                    </label><br>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.username.errors %}
-                                <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           value="{{ username|default:'' }}"
+                           class="{% if errors.username %}error{% endif %}"
+                           placeholder="Choose a username"
+                           required>
+                    {% if errors.username %}
+                        <div class="error-message">{{ errors.username }}</div>
                     {% endif %}
+                    <div class="help-text">3+ characters. Letters, digits and underscores only.</div>
                 </div>
                 
-                <!-- Email -->
+                <!-- Email Field -->
                 <div class="mb-3">
-                    <label for="id_email" class="form-label">
+                    <label for="email" class="form-label">
                         <i class="fas fa-envelope me-2"></i>Email
-                    </label><br>
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.email.errors %}
-                                <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
+                    </label>
+                    <input type="email" 
+                           name="email" 
+                           id="email" 
+                           value="{{ email|default:'' }}"
+                           class="{% if errors.email %}error{% endif %}"
+                           placeholder="Enter your email"
+                           required>
+                    {% if errors.email %}
+                        <div class="error-message">{{ errors.email }}</div>
                     {% endif %}
                 </div>
                 
-                <!-- Password -->
+                <!-- Password Field -->
                 <div class="mb-3">
-                    <label for="id_password1" class="form-label">
+                    <label for="password" class="form-label">
                         <i class="fas fa-lock me-2"></i>Password
-                    </label><br>
-                    {{ form.password1 }}
-                    {% if form.password1.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.password1.errors %}
-                                <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
+                    </label>
+                    <div class="field-wrapper">
+                        <input type="password" 
+                               name="password" 
+                               id="password"
+                               class="{% if errors.password %}error{% endif %}"
+                               placeholder="Create a password"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.password %}
+                        <div class="error-message">{{ errors.password }}</div>
                     {% endif %}
+                    
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <p>Password must contain:</p>
+                        <ul>
+                            <li id="req-length" class="invalid">
+                                <span class="check">✗</span> At least 8 characters
+                            </li>
+                            <li id="req-uppercase" class="invalid">
+                                <span class="check">✗</span> At least one uppercase letter
+                            </li>
+                            <li id="req-lowercase" class="invalid">
+                                <span class="check">✗</span> At least one lowercase letter
+                            </li>
+                            <li id="req-digit" class="invalid">
+                                <span class="check">✗</span> At least one number
+                            </li>
+                            <li id="req-notnumeric" class="invalid">
+                                <span class="check">✗</span> Cannot be entirely numeric
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 
-                <!-- Confirm Password -->
+                <!-- Confirm Password Field -->
                 <div class="mb-3">
-                    <label for="id_confirm_password" class="form-label">
+                    <label for="confirm_password" class="form-label">
                         <i class="fas fa-check-circle me-2"></i>Confirm Password
-                    </label><br>
-                    {{ form.confirm_password }}
-                    {% if form.confirm_password.errors %}
-                        <ul class="errorlist">
-                            {% for error in form.confirm_password.errors %}
-                                <li><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
+                    </label>
+                    <div class="field-wrapper">
+                        <input type="password" 
+                               name="conform_password" 
+                               id="confirm_password"
+                               class="{% if errors.confirm_password %}error{% endif %}"
+                               placeholder="Confirm your password"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if errors.confirm_password %}
+                        <div class="error-message">{{ errors.confirm_password }}</div>
                     {% endif %}
                 </div>
                 
-                <!-- Optional: Bio and Profile Picture (commented out but ready to use) -->
-                {% comment %}
-                <div class="mb-3">
-                    <label for="id_bio" class="form-label">
-                        <i class="fas fa-info-circle me-2"></i>Bio
-                    </label>
-                    {{ form.bio }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_profile_pic" class="form-label">
-                        <i class="fas fa-image me-2"></i>Profile Picture
-                    </label>
-                    {{ form.profile_pic }}
-                </div>
-                {% endcomment %}
-                
-                <!-- Submit Button -->
                 <button type="submit" class="btn btn-dark">
                     <i class="fas fa-user-plus me-2"></i>Register
                 </button>
                 
                 <!-- Login Link -->
                 <div class="login-link">
-                    Already have an account? <a href="/login" style="color: #ffffff; text-decoration: underline;">Login here</a>
+                    Already have an account? <a href="/login">Login here</a>
                 </div>
             </form>
         </div>
@@ -146,5 +396,101 @@
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function togglePassword(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+        
+        // Real-time password validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            const requirements = {
+                length: document.getElementById('req-length'),
+                uppercase: document.getElementById('req-uppercase'),
+                lowercase: document.getElementById('req-lowercase'),
+                digit: document.getElementById('req-digit'),
+                notnumeric: document.getElementById('req-notnumeric')
+            };
+            
+            function validatePassword(value) {
+                // Length check
+                if (value.length >= 8) {
+                    requirements.length.className = 'valid';
+                    requirements.length.innerHTML = '<span class="check">✓</span> At least 8 characters';
+                } else {
+                    requirements.length.className = 'invalid';
+                    requirements.length.innerHTML = '<span class="check">✗</span> At least 8 characters';
+                }
+                
+                // Uppercase check
+                if (/[A-Z]/.test(value)) {
+                    requirements.uppercase.className = 'valid';
+                    requirements.uppercase.innerHTML = '<span class="check">✓</span> At least one uppercase letter';
+                } else {
+                    requirements.uppercase.className = 'invalid';
+                    requirements.uppercase.innerHTML = '<span class="check">✗</span> At least one uppercase letter';
+                }
+                
+                // Lowercase check
+                if (/[a-z]/.test(value)) {
+                    requirements.lowercase.className = 'valid';
+                    requirements.lowercase.innerHTML = '<span class="check">✓</span> At least one lowercase letter';
+                } else {
+                    requirements.lowercase.className = 'invalid';
+                    requirements.lowercase.innerHTML = '<span class="check">✗</span> At least one lowercase letter';
+                }
+                
+                // Digit check
+                if (/\d/.test(value)) {
+                    requirements.digit.className = 'valid';
+                    requirements.digit.innerHTML = '<span class="check">✓</span> At least one number';
+                } else {
+                    requirements.digit.className = 'invalid';
+                    requirements.digit.innerHTML = '<span class="check">✗</span> At least one number';
+                }
+                
+                // Not entirely numeric check
+                if (value && !/^\d+$/.test(value)) {
+                    requirements.notnumeric.className = 'valid';
+                    requirements.notnumeric.innerHTML = '<span class="check">✓</span> Cannot be entirely numeric';
+                } else {
+                    requirements.notnumeric.className = 'invalid';
+                    requirements.notnumeric.innerHTML = '<span class="check">✗</span> Cannot be entirely numeric';
+                }
+            }
+            
+            password.addEventListener('input', function() {
+                validatePassword(this.value);
+                
+                // Check password match in real-time
+                if (confirmPassword.value && this.value !== confirmPassword.value) {
+                    confirmPassword.classList.add('error');
+                } else {
+                    confirmPassword.classList.remove('error');
+                }
+            });
+            
+            confirmPassword.addEventListener('input', function() {
+                const passwordValue = password.value;
+                if (passwordValue && this.value && passwordValue !== this.value) {
+                    this.classList.add('error');
+                } else {
+                    this.classList.remove('error');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -258,44 +258,120 @@ def verify_otp(request, user_id):
     return render(request, 'verify_otp.html', {'user_id': user_id})
 
 def register_page(request):
-    # If user is already logged in, redirect to home
     UserData.objects.filter(is_verified=False).delete()
     if 'user_id' in request.session:
         return redirect('home')
     
     if request.method == 'POST':
-        form = UserForm(request.POST, request.FILES)
-        email = request.POST.get('email')
-        if form.is_valid():
-            # Save the user with hashed password
-            user = form.save()
-            otp=str(random.randint(100000, 999999))  # Generate a random 6-digit OTP
-            message = f"Your verification code is: {otp}"
-            request.session['otp'] = otp  # Store OTP in session for later verification
-            send_mail(
-                    "Verification Code",
-                    message,  # Now this is a string
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=False,)
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('conform_password', '')
+        profile_pic = request.FILES.get('profile_pic')
+        
+        errors = {}
+        
+        # 1. Validate username
+        if not username:
+            errors['username'] = 'Username is required.'
+        elif UserData.objects.filter(username=username).exists():
+            errors['username'] = 'This username is already taken.'
+        elif len(username) < 3:
+            errors['username'] = 'Username must be at least 3 characters long.'
+        elif not re.match(r'^[a-zA-Z0-9_]+$', username):
+            errors['username'] = 'Username can only contain letters, numbers, and underscores.'
+        
+        # 2. Validate email
+        if not email:
+            errors['email'] = 'Email is required.'
+        elif UserData.objects.filter(email=email).exists():
+            errors['email'] = 'This email is already registered.'
+        elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            errors['email'] = 'Please enter a valid email address.'
+        
+        # 3. Validate password
+        if not password:
+            errors['password'] = 'Password is required.'
+        elif len(password) < 8:
+            errors['password'] = 'Password must be at least 8 characters long.'
+        elif password.isdigit():
+            errors['password'] = 'Password cannot be entirely numeric.'
+        elif not any(char.isupper() for char in password):
+            errors['password'] = 'Password must contain at least one uppercase letter.'
+        elif not any(char.islower() for char in password):
+            errors['password'] = 'Password must contain at least one lowercase letter.'
+        elif not any(char.isdigit() for char in password):
+            errors['password'] = 'Password must contain at least one number.'
+        
+        # 4. Validate confirm password
+        if not confirm_password:
+            errors['confirm_password'] = 'Please confirm your password.'
+        elif password and confirm_password and password != confirm_password:
+            errors['confirm_password'] = 'Passwords do not match.'
+        
+        # If there are errors, return to form with errors
+        if errors:
+            context = {
+                'username': username,
+                'email': email,
+                'errors': errors
+            }
+            return render(request, 'register.html', context)
+        
+        # Create user
+        try:
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
             
+            # Create user with hashed password
+            user = UserData.objects.create(
+                username=username,
+                email=email,
+                password=make_password(password),  # Hash the password
+                verified_otp=otp,
+                is_verified=False
+            )
             
             # Handle profile pic upload
-            if 'profile_pic' in request.FILES:
-                profile_pic = request.FILES['profile_pic']
-                # Save the file (you need to handle file storage)
+            if profile_pic:
+                # Save the file (you need to handle file storage properly)
                 # For now, just save the filename
                 user.profile_pic = profile_pic.name
                 user.save()
+                # Note: You should actually save the file to media directory
+                # For proper file handling, use:
+                # from django.core.files.storage import default_storage
+                # file_path = default_storage.save(f'profile_pics/{profile_pic.name}', profile_pic)
+                # user.profile_pic = file_path
+                # user.save()
+            
+            # Store OTP in session for verification
+            request.session['otp'] = otp
+            request.session['user_id'] = user.id  # Store user_id for verification page
+            
+            # Send verification email
+            try:
+                message = f"Your verification code is: {otp}"
+                send_mail(
+                    "Email Verification Code",
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Registration successful! Please verify your email.')
+            except Exception as e:
+                # If email fails, still redirect to OTP page but show warning
+                messages.warning(request, f'Registration successful but email failed: {str(e)}')
             
             return redirect('verify_otp', user_id=user.id)
-        else:
-            messages.error(request, 'Something went wrong!')
+            
+        except Exception as e:
+            messages.error(request, f'Registration failed: {str(e)}')
+            return render(request, 'register.html')
     
-    else:
-        form = UserForm()
-    
-    return render(request, 'register.html', {'form': form})
+    # GET request - show empty form
+    return render(request, 'register.html')
 
 def login_page(request):
     # If user is already logged in, redirect to home
